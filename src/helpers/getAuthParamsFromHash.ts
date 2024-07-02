@@ -8,5 +8,6 @@ export default function getTokenFromUrl() {
       initial[parts[0]] = decodeURIComponent(parts[1]);
       return initial;
     }, {} as Record<string, string | undefined>);
-  
-    return urlHashParams.access_token;
+
+  return urlHashParams.access_token;
+}
