@@ -1,4 +1,5 @@
 import { Box } from "@mui/material";
+import MusicPlayer from "../components/MusicPlayer";
 
 export default function HomePage() {
   return (
@@ -8,7 +9,7 @@ export default function HomePage() {
       justifyContent="center"
       minHeight={500}
     >
-      Add Music player here
+      <MusicPlayer />
     </Box>
   );
 }
