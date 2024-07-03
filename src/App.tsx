@@ -36,7 +36,7 @@ export default function App() {
 
   useEffect(() => {
     //get the token from the spotify Api server
-    const tokenFromApi = getAuthParamsFromHash().access_token;
+    const tokenFromApi = getAuthParamsFromHash();
     window.location.hash = ";";
     if (tokenFromApi) {
       //this only runs the first time the app loads

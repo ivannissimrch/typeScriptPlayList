@@ -6,18 +6,22 @@
  * For more information, read
  * https://developer.spotify.com/documentation/web-api/tutorials/code-flow
  */
-
-
-
+var dotenv = require("dotenv").config();
 var express = require("express");
 var request = require("request");
 var crypto = require("crypto");
 var cors = require("cors");
 var querystring = require("querystring");
 var cookieParser = require("cookie-parser");
+// eslint-disable-next-line no-undef, @typescript-eslint/no-var-requires
 
-var client_id = 'a156bdff028a4287b412f3e928ebbac3' // your clientId
-var client_secret = '7bdddb79b33d4729a04dfecde94f9799' // Your secret
+// var client_id = 'a156bdff028a4287b412f3e928ebbac3' // your clientId
+// var client_secret = '7bdddb79b33d4729a04dfecde94f9799' // Your secret
+
+// eslint-disable-next-line no-undef
+var client_id = process.env.CLIENT_ID;
+// eslint-disable-next-line no-undef
+var client_secret = process.env.CLIENT_SECRET;
 var redirect_uri = "http://localhost:8888/callback"; // Your redirect uri
 
 const generateRandomString = (length) => {
