@@ -32,14 +32,18 @@ type AddMenuProps = {
   currentSong: string;
 };
 
-interface PlayListWithTracks extends SpotifyApi.PlaylistObjectSimplified {
+interface PlayListWithTracksInterface
+  extends SpotifyApi.PlaylistObjectSimplified {
   songsOnPlayList: SpotifyApi.PlaylistTrackObject[];
 }
 
 export default function AddSongMenu({ currentSong }: AddMenuProps) {
   const { spotifyApi } = useContext(AppContext);
   const [playLists, setPlayLists] = useState<
-    PlayListWithTracks[] | SpotifyApi.PlaylistObjectSimplified[]
+    SpotifyApi.PlaylistObjectSimplified[]
+  >([]);
+  const [playListWithTracks, setPlayListWithTracks] = useState<
+    PlayListWithTracksInterface[]
   >([]);
   const [state, setState] = useState({
     bottom: false,
@@ -65,18 +69,18 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
             return { ...list, songsOnPlayList };
           })
         );
-        setPlayLists(playlistAndSongs);
+        setPlayLists(playListData.items);
+        setPlayListWithTracks(playlistAndSongs);
       } catch (error) {
         //TODO fix error type
-        handleExpiredToken(error);
+        handleExpiredToken(error as Error);
       }
     }
     fetchPlayList();
   }, [spotifyApi, currentSong]);
 
   const toggleDrawer =
-    (anchor: string, open: boolean) =>
-    (event: MouseEvent<HTMLDivElement, "click"> & KeyboardEvent) => {
+    (anchor: string, open: boolean) => (event: MouseEvent & KeyboardEvent) => {
       if (
         event.type === "keydown" &&
         (event.key === "Tab" || event.key === "Shift")
@@ -96,12 +100,10 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
       >
         {}
         <List>
-          {playLists.map((list) => {
-            console.log(list.songsOnPlayList);
-            //I don't know how to fix this error about songsOnPayList doesn't exist on type PlayListWithTracks | PlaylistObjectSimplified
-            // const included = list.songsOnPlayList.some(
-            //   (list) => list.track.uri === currentSong
-            // );
+          {playLists.map((list, idx) => {
+            const included = playListWithTracks[idx].songsOnPlayList.some(
+              (list) => list.track.uri === currentSong
+            );
 
             return (
               <ListItem
@@ -119,7 +121,9 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
                   </ListItemAvatar>
 
                   <ListItemText primary={list.name} />
-                  {/* {included && <ListItemText primary="Song is already on list" />} */}
+                  {included && (
+                    <ListItemText primary="Song is already on list" />
+                  )}
                 </ListItemButton>
               </ListItem>
             );
@@ -132,7 +136,6 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
   async function handleListItemclick(
     selectedPlayList: SpotifyApi.PlaylistObjectSimplified
   ) {
-    console.log(selectedPlayList);
     try {
       const song = await spotifyApi.getMyCurrentPlayingTrack();
       const songToAdd = song?.item?.uri as string;
@@ -148,7 +151,7 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
       toast("Song Added to Playlist");
       setState((prev) => ({ ...prev, bottom: false }));
     } catch (error) {
-      handleExpiredToken(error);
+      handleExpiredToken(error as Error);
     }
   }
 
@@ -184,14 +187,13 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
 
       await spotifyApi.addTracksToPlaylist(playList.id, [songToAdd]);
       const playListData = await spotifyApi.getUserPlaylists();
-      console.log(playListData);
       setPlayLists(playListData.items);
       setPlayListName("");
       setIsLoading(false);
       toast("Song Added to Playlist");
       setState((prev) => ({ ...prev, bottom: false }));
     } catch (error) {
-      handleExpiredToken(error);
+      handleExpiredToken(error as Error);
     }
   }
 
