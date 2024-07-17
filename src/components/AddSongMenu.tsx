@@ -80,7 +80,8 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
   }, [spotifyApi, currentSong]);
 
   const toggleDrawer =
-    (anchor: string, open: boolean) => (event: MouseEvent & KeyboardEvent) => {
+    (anchor: string, open: boolean) =>
+    (event: MouseEvent<HTMLButtonElement> & KeyboardEvent) => {
       if (
         event.type === "keydown" &&
         (event.key === "Tab" || event.key === "Shift")
@@ -98,7 +99,6 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
         onClick={() => toggleDrawer(anchor, false)}
         onKeyDown={() => toggleDrawer(anchor, false)}
       >
-        {}
         <List>
           {playLists.map((list, idx) => {
             const included = playListWithTracks[idx].songsOnPlayList.some(
@@ -198,7 +198,7 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
   }
 
   return (
-    <Fragment>
+    <>
       <Button onClick={toggleDrawer("bottom", true)}>
         <MoreVertIcon />
       </Button>
@@ -244,6 +244,6 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
           {!isLoading && <Box>{list("bottom")}</Box>}
         </Box>
       </Drawer>
-    </Fragment>
+    </>
   );
 }
