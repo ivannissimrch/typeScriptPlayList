@@ -14,15 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import {
-  useContext,
-  useState,
-  useEffect,
-  Fragment,
-  MouseEvent,
-  FormEvent,
-  ChangeEvent,
-} from "react";
+import { useContext, useState, FormEvent, ChangeEvent } from "react";
 import { AppContext } from "../App";
 import toast from "react-hot-toast";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -39,9 +31,6 @@ interface PlayListWithTracksInterface
 
 export default function AddSongMenu({ currentSong }: AddMenuProps) {
   const { spotifyApi } = useContext(AppContext);
-  const [playLists, setPlayLists] = useState<
-    SpotifyApi.PlaylistObjectSimplified[]
-  >([]);
   const [playListWithTracks, setPlayListWithTracks] = useState<
     PlayListWithTracksInterface[]
   >([]);
@@ -50,58 +39,43 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
   });
   const [playListName, setPlayListName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const showFetchingDataMessage = (
-    <Fragment>
-      <CircularProgress />
-      <Typography variant="h6">Creating new playlist</Typography>
-    </Fragment>
-  );
+  const showFetchingDataMessage = <CircularProgress />;
 
-  useEffect(() => {
-    async function fetchPlayList() {
-      try {
-        const playListData = await spotifyApi.getUserPlaylists();
+  async function fetchPlayList() {
+    try {
+      setIsLoading(true);
+      const playListData = await spotifyApi.getUserPlaylists();
+      const playlistAndSongs = await Promise.all(
+        playListData.items.map(async (list) => {
+          const { items } = await spotifyApi.getPlaylistTracks(list.id);
+          const songsOnPlayList = items;
+          return { ...list, songsOnPlayList };
+        })
+      );
 
-        const playlistAndSongs = await Promise.all(
-          playListData.items.map(async (list) => {
-            const { items } = await spotifyApi.getPlaylistTracks(list.id);
-            const songsOnPlayList = items;
-            return { ...list, songsOnPlayList };
-          })
-        );
-        setPlayLists(playListData.items);
-        setPlayListWithTracks(playlistAndSongs);
-      } catch (error) {
-        //TODO fix error type
-        handleExpiredToken(error as Error);
-      }
+      setPlayListWithTracks(playlistAndSongs);
+      setIsLoading(false);
+    } catch (error) {
+      handleExpiredToken(error);
     }
-    fetchPlayList();
-  }, [spotifyApi, currentSong]);
+  }
 
-  const toggleDrawer =
-    (anchor: string, open: boolean) =>
-    (event: MouseEvent<HTMLButtonElement> & KeyboardEvent) => {
-      if (
-        event.type === "keydown" &&
-        (event.key === "Tab" || event.key === "Shift")
-      ) {
-        return;
-      }
-      setState({ ...state, [anchor]: open });
-    };
+  const toggleDrawer = (anchor: string, open: boolean) => () => {
+    setState({ ...state, [anchor]: open });
+    if (open) {
+      fetchPlayList();
+    }
+  };
 
   const list = (anchor: string) => {
     return (
       <Box
         sx={{ width: anchor === "bottom" ? "auto" : 250 }}
         role="presentation"
-        onClick={() => toggleDrawer(anchor, false)}
-        onKeyDown={() => toggleDrawer(anchor, false)}
       >
         <List>
-          {playLists.map((list, idx) => {
-            const included = playListWithTracks[idx].songsOnPlayList.some(
+          {playListWithTracks.map((list) => {
+            const included = list.songsOnPlayList.some(
               (list) => list.track.uri === currentSong
             );
 
@@ -109,7 +83,12 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
               <ListItem
                 key={list.id}
                 disablePadding
-                onClick={() => handleListItemclick(list)}
+                onClick={() => handleListItemClick(list)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    handleListItemClick(list);
+                  }
+                }}
               >
                 <ListItemButton>
                   <ListItemAvatar>
@@ -133,7 +112,7 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
     );
   };
 
-  async function handleListItemclick(
+  async function handleListItemClick(
     selectedPlayList: SpotifyApi.PlaylistObjectSimplified
   ) {
     try {
@@ -151,7 +130,7 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
       toast("Song Added to Playlist");
       setState((prev) => ({ ...prev, bottom: false }));
     } catch (error) {
-      handleExpiredToken(error as Error);
+      handleExpiredToken(error);
     }
   }
 
@@ -169,7 +148,7 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
       const songToAdd = song?.item?.uri as string;
 
       if (
-        playLists.some(
+        playListWithTracks.some(
           (list) => list.name.toUpperCase() === playListName.toUpperCase()
         )
       ) {
@@ -186,14 +165,12 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
       });
 
       await spotifyApi.addTracksToPlaylist(playList.id, [songToAdd]);
-      const playListData = await spotifyApi.getUserPlaylists();
-      setPlayLists(playListData.items);
       setPlayListName("");
       setIsLoading(false);
       toast("Song Added to Playlist");
       setState((prev) => ({ ...prev, bottom: false }));
     } catch (error) {
-      handleExpiredToken(error as Error);
+      handleExpiredToken(error);
     }
   }
 
