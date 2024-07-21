@@ -6,7 +6,7 @@ import { AppContext } from "../App";
 import AddSongMenu from "./AddSongMenu";
 
 export default function MusicPlayer() {
-  const { songOnPlayer, spotifyApi } = useContext(AppContext);
+  const { songsOnPlayer, spotifyApi } = useContext(AppContext);
   const token = spotifyApi.getAccessToken();
   const [currentSong, setCurrentSong] = useState("");
   return (
@@ -28,7 +28,7 @@ export default function MusicPlayer() {
       >
         <SpotifyPlayer
           token={token!}
-          uris={songOnPlayer}
+          uris={songsOnPlayer}
           play={true}
           layout="responsive"
           hideAttribution={true}

@@ -17,7 +17,7 @@ export default function SearchList({ searchResultsSongs }: SearchListProps) {
   const { playSelectedSong } = useContext(AppContext);
 
   function handleOnClick(song: SpotifyApi.TrackObjectFull) {
-    playSelectedSong([song.uri]);
+    playSelectedSong(song.uri);
     navigate("/");
   }
 

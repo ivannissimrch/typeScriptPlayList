@@ -39,9 +39,7 @@ export default function LibraryPage() {
                 height="250"
                 width="250"
                 image={
-                  list.images.length === 0
-                    ? HeadPhonesImage
-                    : list.images[0].url
+                  list.images === null ? HeadPhonesImage : list.images[0].url
                 }
                 alt="playlist image"
               />
