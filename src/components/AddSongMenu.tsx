@@ -1,47 +1,40 @@
-import Box from "@mui/material/Box";
-import Drawer from "@mui/material/Drawer";
-import Button from "@mui/material/Button";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
 import {
-  Avatar,
   CircularProgress,
   InputBase,
-  ListItemAvatar,
   Paper,
   Typography,
+  Box,
+  Drawer,
+  Button,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { useContext, useState, FormEvent, ChangeEvent } from "react";
-import { AppContext } from "../App";
-import toast from "react-hot-toast";
 import CancelIcon from "@mui/icons-material/Cancel";
+import { useContext, useState, FormEvent, ChangeEvent } from "react";
+import toast from "react-hot-toast";
+import { AppContext } from "../App";
 import { handleExpiredToken } from "../helpers/handleExpiredToken";
+import PlaylistList from "./PlaylistList";
 
 type AddMenuProps = {
   currentSong: string;
 };
 
-interface PlayListWithTracksInterface
+export interface PlayListsWithTracks
   extends SpotifyApi.PlaylistObjectSimplified {
   songsOnPlayList: SpotifyApi.PlaylistTrackObject[];
 }
 
 export default function AddSongMenu({ currentSong }: AddMenuProps) {
   const { spotifyApi } = useContext(AppContext);
-  const [playListWithTracks, setPlayListWithTracks] = useState<
-    PlayListWithTracksInterface[]
+  const [playListsWithTracks, setPlayListsWithTracks] = useState<
+    PlayListsWithTracks[]
   >([]);
-  const [state, setState] = useState({
-    bottom: false,
-  });
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [playListName, setPlayListName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const showFetchingDataMessage = <CircularProgress />;
 
-  async function fetchPlayList() {
+  async function fetchPlayLists() {
     try {
       setIsLoading(true);
       const playListData = await spotifyApi.getUserPlaylists();
@@ -53,71 +46,31 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
         })
       );
 
-      setPlayListWithTracks(playlistAndSongs);
+      setPlayListsWithTracks(playlistAndSongs);
       setIsLoading(false);
     } catch (error) {
       handleExpiredToken(error);
     }
   }
 
-  const toggleDrawer = (anchor: string, open: boolean) => () => {
-    setState({ ...state, [anchor]: open });
-    if (open) {
-      fetchPlayList();
-    }
-  };
-
-  const list = (anchor: string) => {
-    return (
-      <Box
-        sx={{ width: anchor === "bottom" ? "auto" : 250 }}
-        role="presentation"
-      >
-        <List>
-          {playListWithTracks.map((list) => {
-            const included = list.songsOnPlayList.some(
-              (list) => list.track.uri === currentSong
-            );
-
-            return (
-              <ListItem
-                key={list.id}
-                disablePadding
-                onClick={() => handleListItemClick(list)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    handleListItemClick(list);
-                  }
-                }}
-              >
-                <ListItemButton>
-                  <ListItemAvatar>
-                    <Avatar
-                      alt={`{list.name}`}
-                      src={list.images !== null ? list.images[0].url : ""}
-                      variant="square"
-                    />
-                  </ListItemAvatar>
-
-                  <ListItemText primary={list.name} />
-                  {included && (
-                    <ListItemText primary="Song is already on list" />
-                  )}
-                </ListItemButton>
-              </ListItem>
-            );
-          })}
-        </List>
-      </Box>
-    );
-  };
+  function toggleMenu(open: boolean) {
+    return () => {
+      setIsMenuOpen(open);
+      if (open) {
+        fetchPlayLists();
+      }
+    };
+  }
 
   async function handleListItemClick(
     selectedPlayList: SpotifyApi.PlaylistObjectSimplified
   ) {
     try {
       const song = await spotifyApi.getMyCurrentPlayingTrack();
-      const songToAdd = song?.item?.uri as string;
+      const songToAdd = song.item?.uri;
+      if (!songToAdd) {
+        return;
+      }
       const { items } = await spotifyApi.getPlaylistTracks(selectedPlayList.id);
       const songsOnPlayList = items;
 
@@ -128,7 +81,7 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
 
       await spotifyApi.addTracksToPlaylist(selectedPlayList.id, [songToAdd]);
       toast("Song Added to Playlist");
-      setState((prev) => ({ ...prev, bottom: false }));
+      setIsMenuOpen(false);
     } catch (error) {
       handleExpiredToken(error);
     }
@@ -145,17 +98,20 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
       event.preventDefault();
       setIsLoading(true);
       const song = await spotifyApi.getMyCurrentPlayingTrack();
-      const songToAdd = song?.item?.uri as string;
+      const songToAdd = song.item?.uri;
+      if (!songToAdd) {
+        return;
+      }
 
       if (
-        playListWithTracks.some(
+        playListsWithTracks.some(
           (list) => list.name.toUpperCase() === playListName.toUpperCase()
         )
       ) {
         toast("Cannot use this name");
         setIsLoading(false);
         setPlayListName("");
-        setState((prev) => ({ ...prev, bottom: false }));
+        setIsMenuOpen(false);
         return;
       }
 
@@ -168,7 +124,7 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
       setPlayListName("");
       setIsLoading(false);
       toast("Song Added to Playlist");
-      setState((prev) => ({ ...prev, bottom: false }));
+      setIsMenuOpen(false);
     } catch (error) {
       handleExpiredToken(error);
     }
@@ -176,14 +132,10 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
 
   return (
     <>
-      <Button onClick={toggleDrawer("bottom", true)}>
+      <Button onClick={toggleMenu(true)}>
         <MoreVertIcon />
       </Button>
-      <Drawer
-        anchor={"bottom"}
-        open={state["bottom"]}
-        onClose={toggleDrawer("bottom", false)}
-      >
+      <Drawer anchor={"bottom"} open={isMenuOpen} onClose={toggleMenu(false)}>
         <Box
           sx={{
             display: "flex",
@@ -203,7 +155,7 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
           >
             <Typography variant="h5">Add To PlayList</Typography>
 
-            <Button onClick={toggleDrawer("bottom", false)}>
+            <Button onClick={toggleMenu(false)}>
               <CancelIcon />
             </Button>
           </Box>
@@ -218,7 +170,13 @@ export default function AddSongMenu({ currentSong }: AddMenuProps) {
           </Paper>
           <Typography variant="h6">Save in</Typography>
           {isLoading && showFetchingDataMessage}
-          {!isLoading && <Box>{list("bottom")}</Box>}
+          {!isLoading && (
+            <PlaylistList
+              playListsWithTracks={playListsWithTracks}
+              currentSong={currentSong}
+              handleListItemClick={handleListItemClick}
+            />
+          )}
         </Box>
       </Drawer>
     </>
