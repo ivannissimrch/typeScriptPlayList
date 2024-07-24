@@ -1,18 +1,15 @@
-import Paper from "@mui/material/Paper";
-import InputBase from "@mui/material/InputBase";
-import IconButton from "@mui/material/IconButton";
+import { Box, Container, Paper, InputBase, IconButton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { Box, Container } from "@mui/material";
 import { ChangeEvent, FormEvent, useContext, useState } from "react";
-import SearchList from "../components/SearchList";
+import { useNavigate } from "react-router-dom";
 import { AppContext } from "../App";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import SearchList from "../components/SearchList";
 import { HttpError } from "../helpers/handleExpiredToken";
 
 export default function SearchPage() {
   const [searchResults, setSearchResults] =
-    useState<SpotifyApi.TrackSearchResponse>();
+    useState<SpotifyApi.TrackObjectFull[]>();
   const [songToSearch, setSongToSearch] = useState("");
   const { spotifyApi } = useContext(AppContext);
   const navigate = useNavigate();
@@ -27,8 +24,7 @@ export default function SearchPage() {
     try {
       event.preventDefault();
       const results = await spotifyApi.searchTracks(songToSearch);
-
-      setSearchResults(results);
+      setSearchResults(results.tracks.items);
       setSongToSearch("");
     } catch (error: unknown) {
       if ((error as HttpError).status === 401) {
@@ -78,6 +74,7 @@ export default function SearchPage() {
             inputProps={{ "aria-label": "search Song" }}
             onChange={handleOnChange}
             value={songToSearch}
+            id="searchSongBar"
           />
           <IconButton type="button" sx={{ p: "10px" }} aria-label="search">
             <SearchIcon />

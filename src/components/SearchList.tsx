@@ -1,15 +1,18 @@
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import Avatar from "@mui/material/Avatar";
+import {
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  ListItemAvatar,
+  Avatar,
+} from "@mui/material";
+
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { AppContext } from "../App";
 
 interface SearchListProps {
-  searchResultsSongs: SpotifyApi.TrackSearchResponse;
+  searchResultsSongs: SpotifyApi.TrackObjectFull[];
 }
 
 export default function SearchList({ searchResultsSongs }: SearchListProps) {
@@ -23,8 +26,7 @@ export default function SearchList({ searchResultsSongs }: SearchListProps) {
 
   return (
     <List dense sx={{ width: "100%", bgcolor: "background.paper" }}>
-      {searchResultsSongs.tracks.items.map((song) => {
-        const labelId = `checkbox-list-secondary-label-${song}`;
+      {searchResultsSongs.map((song) => {
         return (
           <ListItem key={song.id} onClick={() => handleOnClick(song)}>
             <ListItemButton>
@@ -36,7 +38,6 @@ export default function SearchList({ searchResultsSongs }: SearchListProps) {
                 />
               </ListItemAvatar>
               <ListItemText
-                id={labelId}
                 primary={`${song.name} ${song.album.artists[0].name} `}
               />
             </ListItemButton>
