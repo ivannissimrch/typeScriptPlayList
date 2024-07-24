@@ -11,8 +11,8 @@ import localStorageToken from "./helpers/localStorageToken";
 
 import SpotifyWebApi from "spotify-web-api-js";
 import getAuthParamsFromHash from "./helpers/getAuthParamsFromHash";
-import getPlayList from "./helpers/loaders/getPlayList";
 import getPlayListSongs from "./helpers/loaders/getPlayListSongs";
+import getPlayLists from "./helpers/loaders/getPlayLists";
 const spotifyApi = new SpotifyWebApi();
 
 type StateType = {
@@ -72,7 +72,7 @@ export default function App() {
         { path: "search", element: <SearchPage /> },
         {
           path: "library",
-          loader: () => getPlayList(spotifyApi),
+          loader: () => getPlayLists(spotifyApi),
           element: <LibraryPage />,
         },
         {

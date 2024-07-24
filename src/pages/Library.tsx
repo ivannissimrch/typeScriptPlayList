@@ -1,18 +1,19 @@
-import { useLoaderData } from "react-router-dom";
-import { Container } from "@mui/material";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
-import Typography from "@mui/material/Typography";
-import { CardActionArea } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useLoaderData, useNavigate } from "react-router-dom";
+import {
+  Container,
+  Card,
+  CardContent,
+  CardMedia,
+  Typography,
+  CardActionArea,
+} from "@mui/material";
 import HeadPhonesImage from "../assets/images/headphones.jpg";
 
 export default function LibraryPage() {
   const lists = useLoaderData() as SpotifyApi.PlaylistObjectSimplified[];
   const navigate = useNavigate();
 
-  function handleOnClick(id: string) {
+  function handleItemClick(id: string) {
     navigate(`/library/${id}`);
   }
 
@@ -31,7 +32,7 @@ export default function LibraryPage() {
           <Card
             sx={{ width: 250, margin: "10px 10px" }}
             key={list.id}
-            onClick={() => handleOnClick(list.id)}
+            onClick={() => handleItemClick(list.id)}
           >
             <CardActionArea>
               <CardMedia
