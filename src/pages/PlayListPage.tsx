@@ -1,12 +1,13 @@
-import { useLoaderData } from "react-router-dom";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import Avatar from "@mui/material/Avatar";
-import { useNavigate, useParams } from "react-router-dom";
-import { Button } from "@mui/material";
+import {
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  ListItemAvatar,
+  Avatar,
+  Button,
+} from "@mui/material";
+import { useNavigate, useParams, useLoaderData } from "react-router-dom";
 import { useState, useContext } from "react";
 import { AppContext } from "../App";
 

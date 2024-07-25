@@ -8,7 +8,6 @@ import PlayListPage from "./pages/PlayListPage";
 import { useState, useEffect, createContext } from "react";
 import Login from "./components/Login";
 import localStorageToken from "./helpers/localStorageToken";
-
 import SpotifyWebApi from "spotify-web-api-js";
 import getAuthParamsFromHash from "./helpers/getAuthParamsFromHash";
 import getPlayListSongs from "./helpers/loaders/getPlayListSongs";
