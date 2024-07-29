@@ -11,6 +11,12 @@ import { useNavigate, useParams, useLoaderData } from "react-router-dom";
 import { useState, useContext } from "react";
 import { AppContext } from "../App";
 
+function trackIsEpisode(
+  track: SpotifyApi.PlaylistTrackObject["track"]
+): track is SpotifyApi.EpisodeObjectFull {
+  return track.type === "episode";
+}
+
 export default function PlayListPage() {
   const songs = useLoaderData() as SpotifyApi.PlaylistTrackObject[];
   const navigate = useNavigate();
@@ -62,15 +68,17 @@ export default function PlayListPage() {
                   variant="square"
                   alt="Album image"
                   src={
-                    (song.track as SpotifyApi.TrackObjectFull).album.images[0]
-                      .url
+                    trackIsEpisode(song.track)
+                      ? song.track.images[0].url
+                      : song.track.album.images[0].url
                   }
                 />
               </ListItemAvatar>
               <ListItemText
                 primary={`${song.track.name} ${
-                  (song.track as SpotifyApi.TrackObjectFull).album.artists[0]
-                    .name
+                  "show" in song.track
+                    ? song.track.show.publisher
+                    : song.track.album.artists[0].name
                 } `}
               />
             </ListItemButton>
