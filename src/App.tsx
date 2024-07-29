@@ -8,15 +8,17 @@ import PlayListPage from "./pages/PlayListPage";
 import { useState, useEffect, createContext } from "react";
 import Login from "./components/Login";
 import localStorageToken from "./helpers/localStorageToken";
-
 import SpotifyWebApi from "spotify-web-api-js";
 import getAuthParamsFromHash from "./helpers/getAuthParamsFromHash";
+import getPlayListSongs from "./helpers/loaders/getPlayListSongs";
+import getPlayLists from "./helpers/loaders/getPlayLists";
 const spotifyApi = new SpotifyWebApi();
 
 type StateType = {
-  songOnPlayer: string[];
+  songsOnPlayer: string | string[];
   spotifyApi: SpotifyWebApi.SpotifyWebApiJs;
-  playSelectedSong: (selectedSong: string[]) => void;
+  playSelectedSong: (selectedSong: string) => void;
+  playAllSongsOnPlayList: (playList: string[]) => void;
   updateSongToAdd: (lastPlayingSong: string) => void;
   getSongToAdd: () => string;
 };
@@ -27,27 +29,25 @@ export default function App() {
   const [spotifyToken, setSpotifyToken] = useState(localStorageToken());
   let songToAdd = "";
   spotifyApi.setAccessToken(localStorageToken());
-
-  const [songOnPlayer, setSongOnPlayer] = useState([
-    "spotify:track:3d2J1W0Msqt6z0TkF0ywLk",
-    "spotify:track:3Xfg7AegXaDLoD5GOUMf2e",
-    "spotify:track:0puoT9566xTWBoRw8qDKxk",
-  ]);
+  const [songsOnPlayer, setSongsOnPlayer] = useState<string | string[]>([""]);
 
   useEffect(() => {
     //get the token from the spotify Api server
     const tokenFromApi = getAuthParamsFromHash();
     window.location.hash = ";";
     if (tokenFromApi) {
-      //this only runs the first time the app loads
       //store spotify token on local storage
       localStorage.setItem("token", tokenFromApi);
       setSpotifyToken(tokenFromApi);
     }
   }, []);
 
-  async function playSelectedSong(selectedSong: string[]) {
-    setSongOnPlayer(selectedSong);
+  async function playSelectedSong(selectedSong: string) {
+    setSongsOnPlayer(selectedSong);
+  }
+
+  async function playAllSongsOnPlayList(playList: string[]) {
+    setSongsOnPlayer(playList);
   }
 
   function updateSongToAdd(lastPlayingSong: string) {
@@ -71,10 +71,14 @@ export default function App() {
         { path: "search", element: <SearchPage /> },
         {
           path: "library",
+          loader: () => getPlayLists(spotifyApi),
           element: <LibraryPage />,
         },
         {
           path: "/library/:playlistId",
+          loader: ({ params }) => {
+            return getPlayListSongs(params, spotifyApi);
+          },
           element: <PlayListPage />,
         },
       ],
@@ -83,11 +87,12 @@ export default function App() {
   return (
     <AppContext.Provider
       value={{
-        songOnPlayer,
+        songsOnPlayer,
         spotifyApi,
         playSelectedSong,
         updateSongToAdd,
         getSongToAdd,
+        playAllSongsOnPlayList,
       }}
     >
       <RouterProvider router={router} />

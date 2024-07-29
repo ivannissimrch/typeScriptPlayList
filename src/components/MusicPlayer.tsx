@@ -1,12 +1,14 @@
 import { Card, Box } from "@mui/material";
 import SpotifyPlayer from "react-spotify-web-playback";
 import toast from "react-hot-toast";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { AppContext } from "../App";
+import AddSongMenu from "./AddSongMenu";
 
 export default function MusicPlayer() {
-  const { songOnPlayer, spotifyApi } = useContext(AppContext);
+  const { songsOnPlayer, spotifyApi } = useContext(AppContext);
   const token = spotifyApi.getAccessToken();
+  const [currentSong, setCurrentSong] = useState("");
   return (
     <Card
       sx={{
@@ -26,11 +28,12 @@ export default function MusicPlayer() {
       >
         <SpotifyPlayer
           token={token!}
-          uris={songOnPlayer}
+          uris={songsOnPlayer}
           play={true}
           layout="responsive"
           hideAttribution={true}
           callback={(state) => {
+            setCurrentSong(state.track.uri);
             if (state.error === "Authentication failed") {
               toast("Token expired please login again");
               localStorage.removeItem("token");
@@ -38,7 +41,10 @@ export default function MusicPlayer() {
             }
           }}
         />
-        <Box></Box>
+        <Box>
+          {" "}
+          <AddSongMenu currentSong={currentSong} />
+        </Box>
       </Box>
     </Card>
   );
