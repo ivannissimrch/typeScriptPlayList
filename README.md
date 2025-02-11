@@ -3,7 +3,7 @@
 ![app image](./src/assets/images/player.jpg)
 
 ![app image2](./src/assets/images/player2.jpg)
-TypeScript version of a PlayList App that allows you to create and store playlists on your Spotify account. It also provides a built-in music player to play the music right within the app. It requires a Spotify Premium account
+This App allows you to create and store playlists on your Spotify account. It also provides a built-in music player to play the music right within the app. It requires a Spotify Premium account
 
 ## How it Works
 
